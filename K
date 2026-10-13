@@ -1,0 +1,75 @@
+-- Random-swear-buttons UI for LÖVE (Love2D)
+-- Save as main.lua and run with: love <folder>
+
+local swears = {
+  "damn", "hell", "shit", "fuck", "ass", "bastard",
+  "crap", "bollocks", "arse", "jerk", "screw you"
+}
+
+local buttons = {}
+local WINDOW_W, WINDOW_H = 800, 600
+local font
+
+local function inside(bx,by,bw,bh,x,y)
+  return x >= bx and x <= bx + bw and y >= by and y <= by + bh
+end
+
+function love.load()
+  math.randomseed(os.time())
+  love.window.setMode(WINDOW_W, WINDOW_H)
+  font = love.graphics.newFont(18)
+  love.graphics.setFont(font)
+
+  -- create some random buttons
+  for i = 1, 12 do
+    local w, h = 160, 48
+    local x = math.random(8, WINDOW_W - w - 8)
+    local y = math.random(8, WINDOW_H - h - 8)
+    local label = swears[math.random(#swears)]
+    table.insert(buttons, { x = x, y = y, w = w, h = h, label = label, hover = false })
+  end
+end
+
+function love.update(dt)
+  local mx, my = love.mouse.getPosition()
+  for _, b in ipairs(buttons) do
+    b.hover = inside(b.x, b.y, b.w, b.h, mx, my)
+  end
+end
+
+function love.draw()
+  -- background
+  love.graphics.clear(0.12, 0.12, 0.14)
+
+  for _, b in ipairs(buttons) do
+    if b.hover then
+      love.graphics.setColor(0.85, 0.2, 0.2) -- hover color
+    else
+      love.graphics.setColor(0.25, 0.25, 0.28) -- normal
+    end
+    love.graphics.rectangle("fill", b.x, b.y, b.w, b.h, 8, 8)
+
+    love.graphics.setColor(1, 1, 1)
+    local tw = font:getWidth(b.label)
+    local th = font:getHeight()
+    love.graphics.print(b.label, b.x + (b.w - tw) / 2, b.y + (b.h - th) / 2)
+  end
+
+  -- simple HUD
+  love.graphics.setColor(1,1,1,0.6)
+  love.graphics.print("Click a button to shuffle its swear / move it", 8, WINDOW_H - 22)
+end
+
+function love.mousepressed(x, y, button)
+  if button ~= 1 then return end
+  for _, b in ipairs(buttons) do
+    if inside(b.x, b.y, b.w, b.h, x, y) then
+      print("Clicked:", b.label) -- console output
+      -- change to a new random swear and nudge position
+      b.label = swears[math.random(#swears)]
+      b.x = math.max(8, math.min(WINDOW_W - b.w - 8, b.x + math.random(-40, 40)))
+      b.y = math.max(8, math.min(WINDOW_H - b.h - 8, b.y + math.random(-40, 40)))
+      break
+    end
+  end
+end
